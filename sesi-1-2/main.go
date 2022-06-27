@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -26,8 +27,8 @@ func main() {
 		{Name: "Budi", Age: 21, Address: "Kos", Reason: "Supaya pro"},
 		{Name: "Cacing", Age: 22, Address: "Kos", Reason: "Supaya pro"},
 	}
-
-	fmt.Println(student[len(os.Args)-1])
+	index, _ := strconv.Atoi(os.Args[1])
+	fmt.Println(student[index-1])
 }
 
 type Biodata struct {
