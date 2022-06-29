@@ -58,5 +58,5 @@ func main() {
 		Password: "000000",
 		Age:      21,
 	})
-
+	// mau foldering tpi ada kendala di goroot
 }
