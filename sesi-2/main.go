@@ -37,11 +37,6 @@ func NewUserService() UserServiceIface {
 }
 
 func (u *UserSvc) Register(user *User) {
-	// if _, ok := u.ListUser[user.UserID]; ok {
-	// 	fmt.Println("Failed, username already exist")
-	// } else {
-	// 	fmt.Println("Success register user")
-	// }
 	u.ListUser[user.UserID] = *user
 
 	fmt.Println(u)
