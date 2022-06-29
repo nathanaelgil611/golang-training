@@ -6,57 +6,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"sesi-2/model"
+	"sesi-2/services"
+
 	"github.com/gorilla/mux"
 )
-
-type User struct {
-	UserID   int    `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Age      int    `json:"age"`
-}
-
-var userList = make(map[int]User)
-
-type UserServiceIface interface {
-	Register(user *User)
-	GetAllUser() map[int]User
-	GetUser(userID int) User
-	Delete(userID int)
-	Update(User *User, userID int)
-}
-
-type UserSvc struct {
-	ListUser map[int]User
-}
-
-func NewUserService() UserServiceIface {
-	list := &userList
-	return &UserSvc{*list}
-}
-
-func (u *UserSvc) Register(user *User) {
-	u.ListUser[user.UserID] = *user
-
-	fmt.Println(u)
-}
-
-func (u *UserSvc) GetUser(userID int) User {
-	return u.ListUser[userID]
-}
-
-func (u *UserSvc) GetAllUser() map[int]User {
-	return u.ListUser
-}
-
-func (u *UserSvc) Delete(userID int) {
-	delete(u.ListUser, userID)
-}
-
-func (u *UserSvc) Update(user *User, userID int) {
-	u.ListUser[userID] = *user
-}
 
 var PORT = ":8080"
 
@@ -79,7 +33,7 @@ func main() {
 }
 
 func getAllUser(w http.ResponseWriter, r *http.Request) {
-	user := NewUserService()
+	user := services.NewUserService()
 	newUser := user.GetAllUser()
 
 	jsonData, _ := json.Marshal(&newUser)
@@ -89,7 +43,7 @@ func getAllUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
-	user := NewUserService()
+	user := services.NewUserService()
 
 	vars := mux.Vars(r)
 	userID, _ := strconv.Atoi(vars["id"])
@@ -107,12 +61,12 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 func registerUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
-	var user User
+	var user model.User
 	if err := decoder.Decode(&user); err != nil {
 		w.Write([]byte("error decoding json body"))
 		return
 	}
-	userSvc := NewUserService()
+	userSvc := services.NewUserService()
 
 	userSvc.Register(&user)
 
@@ -122,7 +76,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-	user := NewUserService()
+	user := services.NewUserService()
 
 	vars := mux.Vars(r)
 	userID, _ := strconv.Atoi(vars["id"])
@@ -137,12 +91,12 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 func updateUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
-	var user User
+	var user model.User
 	if err := decoder.Decode(&user); err != nil {
 		w.Write([]byte("error decoding json body"))
 		return
 	}
-	userSvc := NewUserService()
+	userSvc := services.NewUserService()
 
 	vars := mux.Vars(r)
 	userID, _ := strconv.Atoi(vars["id"])
