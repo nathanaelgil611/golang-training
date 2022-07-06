@@ -3,10 +3,10 @@ package database
 import "sesi-3/model"
 
 func CreateUser(id, age int, name, email, password string) error {
-	var user = model.User{}
+	// var user = model.User{}
 
-	sqlStatement := `INSERT INTO users (id, username, email, password, age) VALUES($1, $2, $3, $4, $5) RETURNING *`
-	err := db.QueryRow(sqlStatement, id, name, email, password, age).Scan(&user.UserID, &user.Username, &user.Email, &user.Password, &user.Age)
+	sqlStatement := `INSERT INTO users (id, username, email, password, age) VALUES($1, $2, $3, $4, $5)`
+	_, err := db.Exec(sqlStatement, id, name, email, password, age)
 	if err != nil {
 		panic(err)
 	}
