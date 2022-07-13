@@ -9,9 +9,9 @@ import (
 	"os"
 	"strconv"
 
-	"sesi-5/database"
-	"sesi-5/model"
-	"sesi-5/services"
+	"sesi-6/database"
+	"sesi-6/model"
+	"sesi-6/services"
 
 	"github.com/gorilla/mux"
 )
@@ -45,6 +45,8 @@ func main() {
 	r.HandleFunc("/users/{id}", deleteUser).Methods(http.MethodDelete)
 	r.HandleFunc("/users-url", getUserURL).Methods(http.MethodGet)
 
+	r.HandleFunc("/login", login).Methods(http.MethodPut)
+
 	http.Handle("/", Middleware(r))
 	// r.Use(Middleware)
 	http.ListenAndServe(PORT, nil)
@@ -67,6 +69,36 @@ func Middleware(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r)
 	})
+}
+
+func login(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var p struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := decoder.Decode(&p); err != nil {
+		w.Write([]byte("error decoding json body"))
+		return
+	}
+	fmt.Println(p)
+	userSvc := services.NewUserService()
+
+	var response struct {
+		Message string `scheme: "message" json:"message"`
+	}
+
+	res := userSvc.Login(p.Email, p.Password)
+	if res {
+		response.Message = "Success Login"
+	} else {
+		response.Message = "Failed to Login"
+	}
+
+	jsonData, _ := json.Marshal(response)
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(jsonData)
+	fmt.Fprint(w)
 }
 
 func getUserURL(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +159,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userSvc := services.NewUserService()
-
+	fmt.Println(user)
 	userSvc.Register(&user)
 
 	w.Header().Add("Content-Type", "application/json")
@@ -160,7 +192,6 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	userID, _ := strconv.Atoi(vars["id"])
-	fmt.Println(userID)
 
 	userSvc.Update(&user, userID)
 
