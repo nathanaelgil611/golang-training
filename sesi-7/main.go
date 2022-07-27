@@ -18,7 +18,10 @@ import (
 
 var PORT = ":8080"
 
-var p struct {
+const jsonPath = "./static/weather.json"
+const htmlPath = "./html/template.html"
+
+var dataWeather struct {
 	Water       int    `json:"water"`
 	Wind        int    `json:"wind"`
 	WaterStatus string `json:"water_status"`
@@ -26,32 +29,7 @@ var p struct {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-	min := 1
-	max := 20
-	p.Water = (rand.Intn(max-min) + min)
-	p.Wind = (rand.Intn(max-min) + min)
-	p.WaterStatus = getWaterStatus(p.Water)
-	p.WindStatus = getWindStatus(p.Wind)
-	ticker := time.NewTicker(5 * time.Second)
-	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				p.Water = (rand.Intn(max-min) + min)
-				p.Wind = (rand.Intn(max-min) + min)
-				p.WaterStatus = getWaterStatus(p.Water)
-				p.WindStatus = getWindStatus(p.Wind)
-				fmt.Println(p.Water, p.Wind)
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-
-	}()
-
+	go GenerateJson()
 	r := mux.NewRouter()
 	r.HandleFunc("/users-url", getUserURL).Methods(http.MethodGet)
 	r.HandleFunc("/weather-status", weatherStatus).Methods(http.MethodGet)
@@ -62,7 +40,21 @@ func main() {
 
 }
 
-func getWindStatus(val int) string {
+func GenerateJson() {
+
+	for {
+		dataWeather.Water = (rand.Intn(100))
+		dataWeather.Wind = (rand.Intn(100))
+		dataWeather.WaterStatus = GetWaterStatus(dataWeather.Water)
+		dataWeather.WindStatus = GetWindStatus(dataWeather.Wind)
+		jsonData, _ := json.Marshal(&dataWeather)
+		ioutil.WriteFile(jsonPath, jsonData, os.ModePerm)
+
+		time.Sleep(15 * time.Second)
+	}
+}
+
+func GetWindStatus(val int) string {
 	if val < 6 {
 		return "Aman"
 	} else if val < 15 {
@@ -72,7 +64,7 @@ func getWindStatus(val int) string {
 	}
 }
 
-func getWaterStatus(val int) string {
+func GetWaterStatus(val int) string {
 	if val < 5 {
 		return "Aman"
 	} else if val < 8 {
@@ -83,12 +75,14 @@ func getWaterStatus(val int) string {
 }
 
 func weatherStatus(w http.ResponseWriter, r *http.Request) {
-	tpl, err := template.ParseFiles("./html/template.html")
+	file, _ := ioutil.ReadFile(jsonPath)
+	json.Unmarshal(file, &dataWeather)
+	templates, err := template.ParseFiles(htmlPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	tpl.Execute(w, p)
+	templates.Execute(w, dataWeather)
 }
 
 func getUserURL(w http.ResponseWriter, r *http.Request) {
