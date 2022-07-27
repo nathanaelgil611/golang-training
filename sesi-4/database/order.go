@@ -1,11 +1,12 @@
 package database
 
 import (
+	"database/sql"
 	"sesi-4/model"
 	"time"
 )
 
-func CreateOrder(order model.Order) error {
+func CreateOrder(db *sql.DB, order model.Order) error {
 	var o = model.Order{}
 
 	sqlStatementOrder := `INSERT INTO orders (customer_name) VALUES($1) RETURNING order_id`
@@ -22,7 +23,7 @@ func CreateOrder(order model.Order) error {
 	return err
 }
 
-func GetAllOrder() ([]model.Order, error) {
+func GetAllOrder(db *sql.DB) ([]model.Order, error) {
 	var orderList = make(map[int]model.Order)
 
 	sqlStatement := `SELECT o.*, i.* FROM "orders" as o INNER JOIN "items" as i ON o.order_id=i.order_id`
@@ -72,7 +73,7 @@ func GetAllOrder() ([]model.Order, error) {
 	return data, err
 }
 
-func GetOrder(id int) (model.Order, error) {
+func GetOrder(db *sql.DB, id int) (model.Order, error) {
 	var orderList = make(map[int]model.Order)
 
 	var temp struct {
@@ -116,7 +117,7 @@ func GetOrder(id int) (model.Order, error) {
 	return orderList[id], err
 }
 
-func UpdateOrder(order *model.Order, id int) error {
+func UpdateOrder(db *sql.DB, order *model.Order, id int) error {
 	sqlStatement := `UPDATE orders SET customer_name = $1 WHERE order_id = $2`
 	_, err := db.Exec(sqlStatement, order.CustomerName, id)
 
@@ -128,7 +129,7 @@ func UpdateOrder(order *model.Order, id int) error {
 	return err
 }
 
-func DeleteOrder(id int) error {
+func DeleteOrder(db *sql.DB, id int) error {
 
 	sqlStatementItem := `DELETE FROM items WHERE order_id = $1`
 	_, err := db.Exec(sqlStatementItem, id)
