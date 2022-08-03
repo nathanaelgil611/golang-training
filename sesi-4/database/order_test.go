@@ -30,7 +30,7 @@ func Test_CreateOrder(t *testing.T) {
 			},
 		},
 	}
-	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO orders (customer_name) VALUES($1) RETURNING order_id`)).WithArgs(order.CustomerName).WillReturnRows(sqlmock.NewRows([]string{"order_id"}).AddRow(0)).RowsWillBeClosed()
+	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO orders (customer_name) VALUES($1) RETURNING order_id`)).WithArgs(order.CustomerName).WillReturnRows(sqlmock.NewRows([]string{"order_id"}).AddRow(0))
 	for _, item := range order.Items {
 		mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO items (item_code, description, quantity, order_id) VALUES($1, $2, $3, $4)`)).WithArgs(item.ItemCode, item.Description, item.Quantity, 0).WillReturnResult(sqlmock.NewResult(1, 1))
 	}

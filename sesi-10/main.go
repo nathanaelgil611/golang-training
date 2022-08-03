@@ -35,7 +35,7 @@ func main() {
 		panic(err)
 	}
 
-	err = cleanenv.ReadConfig(".env", &cfgPORT)
+	err = cleanenv.ReadConfig(".env", &cfgJWT)
 	if err != nil {
 		panic(err)
 	}
